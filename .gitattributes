@@ -1,0 +1,6 @@
+*      text eol=lf
+*.sh   text eol=lf
+*.ovpn text eol=auto
+
+*.pdf binary
+*.png binary
