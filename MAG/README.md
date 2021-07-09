@@ -431,4 +431,4 @@ Given an MAG Author ID, we can download all publications in MAG:
 
 ## 3. Import to MongoDB
 
-Use `MongoDB/import.py mag` to import the pc member MAG records
+Use `python3 MongoDB/import.py mag` to import the pc member MAG records
