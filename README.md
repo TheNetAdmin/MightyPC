@@ -30,7 +30,7 @@ This toolkit currently does not provide the following functionalities, they may
 be implemented later:
    1. Conflict check
       > - Although conflict check with DBLP and MAG records in MongoDB should be
-      a easy job (because all publication info for each pc member are already
+      an easy job (because all publication info for each pc member are already
       in MongoDB), but I was not responsible for the conflict check during
       MICRO 2021, so I have not implemented this functionality.
       > - I may (or may not) implement conflict check in the future
