@@ -13,6 +13,12 @@ more docs and examples in the future.
 MightyPC is initially developed for [MICRO 2021](https://www.microarch.org/micro54),
 with internal code name *PowerPC* (Powerful toolkit for conference Program Chair).
 
+MightyPC has already served in MICRO 2021 and HPCA 2022.
+
+## Overview
+
+![](./Docs/Imgs/MightyPC.png)
+
 ## Introduction
 
 This toolkit can:
@@ -28,9 +34,11 @@ This toolkit can:
 
 This toolkit currently does not provide the following functionalities, they may
 be implemented later:
+
    1. Conflict check
+
       > - Although conflict check with DBLP and MAG records in MongoDB should be
-      an easy job (because all publication info for each pc member are already
+      a trivial job (because all publication info for each pc member are already
       in MongoDB), but I was not responsible for the conflict check during
       MICRO 2021, so I have not implemented this functionality.
       > - I may (or may not) implement conflict check in the future
