@@ -203,7 +203,9 @@ def submission_info(submission_info_file, submission_dbcol_name, field_to_update
             raise Exception(f"Field {field_to_update} not found in record {sub}")
         logger.info(f'Updating paper [{sub["pid"]:>4}], field {field_to_update}')
         sdb.client.update_one(
-            {"_id": int(sub["pid"])}, {"$set": {field_to_update: sub[field_to_update]}}
+            {"_id": int(sub["pid"])},
+            {"$set": {field_to_update: sub[field_to_update]}},
+            upsert=True
         )
 
 
@@ -270,7 +272,7 @@ def pc_member(pcmember_file, pcmember_dbcol_name):
         tags = member.pop("tags")
         tags = re.sub(r"\s+", " ", tags)
         member["tags"] = tags.split(" ")
-        sdb.client.update_one({"_id": member["email"]}, {"$set": member})
+        sdb.client.update_one({"_id": member["email"]}, {"$set": member}, upsert=True)
 
 
 @dbimport.command()
