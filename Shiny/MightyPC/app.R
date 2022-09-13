@@ -11,6 +11,7 @@ library(shiny)
 library(mongolite)
 library(dplyr)
 library(DT)
+library(shinymanager)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -38,8 +39,7 @@ ui <- fluidPage(
     tabsetPanel(type = 'tabs',
                 tabPanel('Summary', fluidRow(
                     column(width=4, h2('Potential Reviewers'), DTOutput('submission_potential_reviewers')),
-                    column(width=6, h2('Cited PC Papers'), DTOutput("submission_reference_pc_no_conflict")),
-                    column(width=2, h2('ML Suggested Reviewers'), DTOutput('submission_ml_suggested_reviewers'))
+                    column(width=8, h2('Cited PC Papers'), DTOutput("submission_reference_pc_no_conflict")),
                 )),
                 tabPanel('Reviewers', DTOutput('submission_potential_reviewers_standalone')),
                 tabPanel('References No Conflict', DTOutput("submission_reference_pc_no_conflict_standalone")),
@@ -48,11 +48,36 @@ ui <- fluidPage(
                 )
 )
 
+# define some credentials
+credentials <- data.frame(
+  user = c("username1", "username2"), # mandatory
+  password = c("password1", "password2"), # mandatory
+  start = c("2019-04-15"), # optinal (all others)
+  expire = c(NA, NA),
+  admin = c(TRUE, TRUE),
+  comment = "Simple and secure authentification mechanism for single ‘Shiny’ applications.",
+  stringsAsFactors = FALSE
+)
 
-server <- function(input, output) {
+# Wrap your UI with secure_app
+ui <- secure_app(ui)
 
+server <- function(input, output, session) {
+  
+  # call the server part
+  # check_credentials returns a function to authenticate users
+  res_auth <- secure_server(
+    check_credentials = check_credentials(credentials),
+    timeout = 0
+  )
+  
+  output$auth_output <- renderPrint({
+    reactiveValuesToList(res_auth)
+  })
+  
+#   your classic server logic
     # NOTE: set your mongodb username, password and url:port
-    sdb = mongo(collection = 'submission', db = 'hotcrp', url = 'mongodb://USERNAME:PASSWORD@URL:PORT')
+    sdb = mongo(collection = 'submission', db = 'hotcrp', url = 'mongodb://SET_YOUR_MONGODB_USERNAME:SET_YOUR_MONGODB_PASSWORD@127.0.0.1:32782')
 
     submission <- sdb$find(fields = '{"_id": 1}')
     submission_ids <- submission[,1]
@@ -67,7 +92,6 @@ server <- function(input, output) {
         )
     })
 
-
     record <- reactive({ sdb$find(query = paste('{"_id":', input$selected_submission_id, '}')) })
 
     output$submission_title <- renderText({ record()$title })
@@ -81,13 +105,14 @@ server <- function(input, output) {
 
     output$submission_tags <- renderTable({
         t <- data.frame(record()$tags, stringsAsFactors = FALSE)
-        colnames(t) <- c('Tags')
+        colnames(t) <- c('topics')
         t
     }, options = list(pageLength = 4, lengthChange = FALSE), rownames= FALSE)
 
     output$submission_tag_check <- renderDT({
-        data.frame(record()$tag_check) %>%
-            relocate(tag_name)
+        p <- data.frame(record()$tags, stringsAsFactors = FALSE)
+        colnames(p) <- c('topics')
+        p
     }, options = list(pageLength = 50), colnames = FALSE, rownames= FALSE)
 
     output$submission_reference <- renderDT({
@@ -135,17 +160,16 @@ server <- function(input, output) {
 
     output$submission_potential_reviewers <- renderDT({
         data.frame(record()$potential_reviewers) %>%
-            select(name, pc_type, count_cited) %>%
+            select(first, last, pc_type, count_cited) %>%
             arrange(desc(count_cited)) %>%
             arrange(desc(pc_type))
     }, options = list(pageLength = 25), rownames= FALSE)
 
     output$submission_potential_reviewers_standalone <- renderDT({
         data.frame(record()$potential_reviewers) %>%
-            select(name, email, affiliation,  pc_type, count_paper, count_cited) %>%
+            select(first, last, email, affiliation,  pc_type, count_paper, count_cited) %>%
             arrange(desc(count_cited))
     }, options = list(pageLength = 50), rownames= FALSE)
 }
 
-# Run the application
-shinyApp(ui = ui, server = server)
+shinyApp(ui, server)

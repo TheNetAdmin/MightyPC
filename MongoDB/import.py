@@ -5,10 +5,18 @@ import logging
 import os
 import re
 from pathlib import Path
+from xmlrpc.client import Boolean, boolean
 
 import click
 import pandas as pd
 from utils import make_mongodb, mongodb
+
+def norm_title(title):
+    t = title
+    t = t.lower()
+    t = re.sub(r"\W", " ", t)
+    t = re.sub(r"\s+", " ", t)
+    return t
 
 log_format = logging.Formatter(
     "[%(asctime)s][%(filename)s:%(lineno)4s - %(funcName)10s()] %(message)s"
@@ -79,7 +87,7 @@ def dblp(
                 a = re.sub(r"\s*and\s*", "", a)
                 a = re.sub(r"\s+", " ", a)
                 p["author"].append(a)
-            p["title"] = re.sub(r"\s+", " ", p.pop("title"))
+            p["title"] = norm_title(p.pop("title"))
             pa = {"name": author["name"], "email": author["email"]}
             pdb.client.update_one(
                 {"_id": p["_id"]},
@@ -203,9 +211,7 @@ def submission_info(submission_info_file, submission_dbcol_name, field_to_update
             raise Exception(f"Field {field_to_update} not found in record {sub}")
         logger.info(f'Updating paper [{sub["pid"]:>4}], field {field_to_update}')
         sdb.client.update_one(
-            {"_id": int(sub["pid"])},
-            {"$set": {field_to_update: sub[field_to_update]}},
-            upsert=True
+            {"_id": int(sub["pid"])}, {"$set": {field_to_update: sub[field_to_update]}}, upsert=True 
         )
 
 
@@ -223,8 +229,8 @@ def submission_tag(submission_tag_file, submission_dbcol_name):
         for r in reader:
             tags.append(r)
     for t in tags:
-        pid = t["Paper"]
-        ptags = t["Tags"]
+        pid = t["paper"]
+        ptags = t["topic"]
         ptags = ptags.replace("#", " ")
         ptags = re.sub(r"\s+", " ", ptags)
         ptags = ptags.split(" ")

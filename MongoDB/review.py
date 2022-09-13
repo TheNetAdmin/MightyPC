@@ -88,6 +88,7 @@ def gen_review_preference_single(sid, sdb, rdb, pdb, force=False):
         rdb.client.update_one(
             {"_id": pref["_id"]},
             {"$set": {"preference": preference, "preference_score": score}},
+            upsert=True,
         )
 
 

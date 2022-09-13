@@ -103,7 +103,7 @@ def check_author_in_conflict_single(sid, sdb, mdb, pdb, all_pc, force=False):
                     f"    [ERROR][Detected by email] Author is PC but not declared as conflict: {author}"
                 )
     # 2. Check by name
-    all_pc_name = [p["name"] for p in copy.deepcopy(all_pc)]
+    all_pc_name = [(p["first"] + " " + p["last"]) for p in copy.deepcopy(all_pc)]
     for author in sub["authors"]:
         if "first" not in author or "last" not in author:
             logger.error(f"    Author does not have first/last name field: {author}")
@@ -113,7 +113,7 @@ def check_author_in_conflict_single(sid, sdb, mdb, pdb, all_pc, force=False):
         logger.debug(f"    Best name match: {name} == {name_best_match}")
         if name_best_match:
             for p in copy.deepcopy(all_pc):
-                if p["name"] == name_best_match[0]:
+                if (p["first"] + " " + p["last"]) == name_best_match[0]:
                     pc_email = p["email"]
             if pc_email not in sub["pc_conflicts"]:
                 logger.error(
