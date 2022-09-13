@@ -119,7 +119,7 @@ def suggest_reviewers_single(sid, sdb, mdb, pdb, force=False):
                 precord["pc_type"] = "erc"
             else:
                 logger.warning(
-                    f'Skip this pc member who is neither tpc nor erc, based on the tags field: {precord["name"]}'
+                    f'Skip this pc member who is neither tpc nor erc, based on the tags field: {precord["first"]} {precord["last"]}'
                 )
                 precord["pc_type"] = None
             precord["count_paper"] = 0
@@ -144,7 +144,7 @@ def suggest_reviewers_single(sid, sdb, mdb, pdb, force=False):
                         ref["erc_no_conflict"].append(p)
 
     suggested_reviewers = [p for _, p in pc_no_conflict.items()]
-    suggested_reviewers.sort(key=lambda x: x["name"])
+    suggested_reviewers.sort(key=lambda x: x["first"])
 
     sdb.client.update_one(
         {"_id": sid},
@@ -154,6 +154,7 @@ def suggest_reviewers_single(sid, sdb, mdb, pdb, force=False):
                 "potential_reviewers": suggested_reviewers,
             }
         },
+        upsert=True,
     )
 
 
@@ -184,14 +185,16 @@ def aggregate_tags_single(sid, sdb, mdb, pdb, force=False):
         if ref["pc_paper"]:
             for p in ref["mag_record"]["PCAuthor"]:
                 all_pc_email_cited.add(p["email"])
-                all_pc_author.add(p["name"])
+                all_pc_author.add(p["first"])
+                all_pc_author.add(p["last"])
 
     for pe in all_pc_email_cited:
         precord = pdb.client.find_one({"_id": pe})
         for pt in precord["tags"]:
             if pt in tag_check:
                 tag_check[pt]["declared_by_pc_member"] = True
-                tag_check[pt]["pc_member"].add(precord["name"])
+                tag_check[pt]["pc_member"].add(precord["first"])
+                tag_check[pt]["pc_member"].add(precord["last"])
 
     for _, v in tag_check.items():
         v["pc_member"] = list(v["pc_member"])
@@ -203,7 +206,7 @@ def aggregate_tags_single(sid, sdb, mdb, pdb, force=False):
         tag_upload.append(v)
 
     logger.info("Upload tags info")
-    sdb.client.update_one({"_id": sid}, {"$set": {"tag_check": tag_upload}})
+    sdb.client.update_one({"_id": sid}, {"$set": {"tag_check": tag_upload}},upsert=True)
 
 
 def check_pc_reference_single(sid, sdb, mdb, pdb, force=False):
@@ -227,7 +230,7 @@ def check_pc_reference_single(sid, sdb, mdb, pdb, force=False):
             return
         ref["pc_paper"] = False
         title = norm_title(ref["title"][0])
-        match = mdb.client.find_one({"Ti": title})
+        match = mdb.client.find_one({"title": title})
         if match:
             ref["pc_paper"] = True
             ref["mag_record"] = match
@@ -239,12 +242,12 @@ def check_pc_reference_single(sid, sdb, mdb, pdb, force=False):
         if "mag_record" in ref:
             logger.debug(f'  - Title : {ref["title"][0]}')
             logger.debug(f'    MAG ID: {ref["mag_record"]["_id"]}')
-            logger.debug(f'    MAG Ti: {ref["mag_record"]["Ti"]}')
+            logger.debug(f'    MAG Ti: {ref["mag_record"]["title"]}')
             logger.debug(f"    PC    :")
             for pc in ref["mag_record"]["PCAuthor"]:
-                logger.debug(f'    - {pc["name"]}')
+                logger.debug(f'    - {pc["first"]} {pc["last"]}')
     logger.info("Upload pc paper info")
-    sdb.client.update_one({"_id": sid}, {"$set": {"reference": sub["reference"]}})
+    sdb.client.update_one({"_id": sid}, {"$set": {"reference": sub["reference"]}},upsert=True)
 
 
 tag_fields = [
