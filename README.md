@@ -13,7 +13,7 @@ more docs and examples in the future.
 MightyPC is initially developed for [MICRO 2021](https://www.microarch.org/micro54),
 with internal code name *PowerPC* (Powerful toolkit for conference Program Chair).
 
-MightyPC has already served in MICRO 2021 and HPCA 2022.
+MightyPC has already served in MICRO 2021, HPCA 2022, and MICRO 2022.
 
 ## Overview
 
