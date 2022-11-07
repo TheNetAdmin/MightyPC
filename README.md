@@ -24,7 +24,7 @@ MightyPC has already served in MICRO 2021, HPCA 2022, and MICRO 2022.
 This toolkit can:
 
 1. Parse DBLP
-2. Parse Microsoft Academic Graph database
+2. ~Parse Microsoft Academic Graph database~ Update: MAG has been discontinued, so this function is not useful anymore.
 3. Maintain a MongoDB for agile development and centralized data storage
 4. Parse reference list given a submission pdf
 5. Suggest reviewers based on pc papers cited by a submission
